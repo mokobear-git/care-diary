@@ -86,6 +86,9 @@
   @page { size:A4 portrait; margin:0; }
   .pdfmode, .pdfmode body { background:#fff; margin:0; padding:0; overflow:hidden; }
   .pdfmode .bar-wrap { display:none; }
+  .pdfmode td { vertical-align:top; }
+  .pdfmode td.mark { vertical-align:middle; }
+  .ta-print { min-height:29mm; font-size:12px; line-height:1.4; padding:1.5mm; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-all; }
   .pdfmode .page { margin:0; box-shadow:none; width:210mm; max-width:none; }
   @media print {
     html, body, :root { background:#fff; padding:0 !important; margin:0 !important; }
@@ -263,7 +266,7 @@ async function savePdf(btn) {
     await new Promise((ok, ng) => { fr.onload = ok; setTimeout(() => ng(new Error("timeout")), 15000); });
     const d = fr.contentDocument, w = fr.contentWindow;
     if (d.fonts && d.fonts.ready) await d.fonts.ready;
-    w.dispatchEvent(new Event("resize"));
+    d.querySelectorAll("td textarea").forEach(t => { const v = d.createElement("div"); v.className = "ta-print"; v.textContent = t.value; t.replaceWith(v); });
     await new Promise(r => setTimeout(r, 400));
     const canvas = await html2canvas(d.querySelector(".page"), { scale: 2, backgroundColor: "#ffffff", windowWidth: 794 });
     const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
