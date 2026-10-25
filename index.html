@@ -20,6 +20,7 @@
   }
   :root[data-theme="dark"] { --bg:#1b1f1c; --bar:#0f1311; --muted:#888; color-scheme: dark; }
 
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   * { box-sizing: border-box; }
   body { background:var(--bg); color:var(--fg);
          font-family:"Yu Gothic","Meiryo","Hiragino Sans","Noto Sans JP",sans-serif;
@@ -88,7 +89,7 @@
   .pdfmode .bar-wrap { display:none; }
   .pdfmode td { vertical-align:top; }
   .pdfmode td.mark { vertical-align:middle; }
-  .ta-print { min-height:29mm; font-size:12px; line-height:1.4; padding:1.5mm; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-all; }
+  .ta-print { min-height:29mm; font-size:12px; line-height:1.4; padding:1.5mm 1.5mm 3mm; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-all; }
   .pdfmode .page { margin:0; box-shadow:none; width:210mm; max-width:none; }
   @media print {
     html, body, :root { background:#fff; padding:0 !important; margin:0 !important; }
@@ -260,7 +261,7 @@ async function savePdf(btn) {
   let fr;
   try {
     fr = document.createElement("iframe");
-    fr.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:1200px;border:0";
+    fr.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:4000px;border:0";
     fr.src = location.pathname + "?pdf=1";
     document.body.appendChild(fr);
     await new Promise((ok, ng) => { fr.onload = ok; setTimeout(() => ng(new Error("timeout")), 15000); });
@@ -268,7 +269,9 @@ async function savePdf(btn) {
     if (d.fonts && d.fonts.ready) await d.fonts.ready;
     d.querySelectorAll("td textarea").forEach(t => { const v = d.createElement("div"); v.className = "ta-print"; v.textContent = t.value; t.replaceWith(v); });
     await new Promise(r => setTimeout(r, 400));
-    const canvas = await html2canvas(d.querySelector(".page"), { scale: 2, backgroundColor: "#ffffff", windowWidth: 794 });
+    const pg = d.querySelector(".page");
+    d.querySelectorAll("tbody tr").forEach(tr => { tr.style.height = Math.ceil(tr.getBoundingClientRect().height) + "px"; });
+    const canvas = await html2canvas(pg, { scale: 2, backgroundColor: "#ffffff", windowWidth: 794, windowHeight: Math.ceil(pg.scrollHeight) + 40 });
     const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
     const perPage = Math.round(canvas.width * 297 / 210);
     const pages = Math.max(1, Math.ceil((canvas.height - 40) / perPage));
